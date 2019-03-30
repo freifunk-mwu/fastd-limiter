@@ -1,0 +1,15 @@
+#additional: 8
+
+#redis_db: ':6379'
+
+fastd_keys: '/home/admin/clones/peers-ffmwu'
+#key_ttl: 900
+
+metrics_url: 'https://%s.freifunk-mwu.de:9281/metrics'
+
+gateways:
+  - ingwer
+  - lotuswurzel
+  - spinat
+  - uffschnitt
+  - wasserfloh
