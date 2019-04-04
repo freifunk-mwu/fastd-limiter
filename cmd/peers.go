@@ -14,26 +14,14 @@ var peersCmd = &cobra.Command{
 	Short: "update connected peers",
 	Run: func(cmd *cobra.Command, args []string) {
 		redisDb := viper.GetString("redis_db")
-
-		if !viper.IsSet("metrics_url") {
-			fmt.Println("metrics_url not defined in config file")
-			os.Exit(1)
-		}
-		metricsUrl := viper.GetString("metrics_url")
+		metricsUrl := viper.GetString("metrics_url_local")
 
 		conn := common.ConnectRedis(redisDb)
 		defer conn.Close()
 
-		hostname, err := os.Hostname()
+		peers, err := common.GetPeers(metricsUrl)
 		if err != nil {
-			fmt.Printf("%v\n", err)
-			os.Exit(2)
-		}
-		url := fmt.Sprintf(metricsUrl, hostname)
-
-		peers, err := common.GetPeers(url)
-		if err != nil {
-			fmt.Printf("%s: %v\n", url, err)
+			fmt.Printf("%s: %v\n", metricsUrl, err)
 			os.Exit(2)
 		}
 
