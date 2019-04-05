@@ -1,12 +1,27 @@
-#additional: 8
+# gauge to add to peer limits (optional)
+# default: 8
+additional: 8
 
-#redis_db: ':6379'
+# redis instance to connect to (optional)
+# default: ':6379'
+redis_db: ':6379'
 
+# time to live for key entries (optional)
+# default: 900
+key_ttl: 900
+
+# path to fastd public keys (mandatory)
 fastd_keys: '/home/admin/clones/peers-ffmwu'
-#key_ttl: 900
 
+# url for local fastd-exporter metrics (optional)
+# default: 'http://127.0.0.1:9281/metrics'
+metrics_url_local: 'http://127.0.0.1:9281/metrics'
+
+# base url for fastd-exporter metrics (mandatory)
+# %s is replaced with the hostnames defined in gateways
 metrics_url: 'https://%s.freifunk-mwu.de:9281/metrics'
 
+# gateway hostnames used in conjunction with metrics_url (mandatory)
 gateways:
   - ingwer
   - lotuswurzel
