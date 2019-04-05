@@ -32,8 +32,8 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	// flags and configuration settings
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is /etc/fastd-limiter.yaml)")
-	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "be verbose")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is /etc/fastd-limiter.yaml)")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "be verbose")
 }
 
 // initConfig reads in config file
