@@ -12,12 +12,14 @@ import (
 	"strings"
 )
 
+// define constants
 const (
 	PEERS_CONNECTED = "peers_connected"
 	PEER_LIMIT      = "peer_limit"
 	KEY             = "key_%s"
 )
 
+// helper function to connect to redis
 func ConnectRedis(target string) (conn redis.Conn) {
 	conn, err := redis.Dial("tcp", target)
 	if err != nil {
@@ -27,6 +29,7 @@ func ConnectRedis(target string) (conn redis.Conn) {
 	return
 }
 
+// get and parse prometheus metrics
 func getMetrics(url string) (metrics *dto.MetricFamily, err error) {
 	res, err := http.Get(url)
 	if err != nil {
@@ -54,6 +57,7 @@ func getMetrics(url string) (metrics *dto.MetricFamily, err error) {
 	return nil, errors.New("`fastd_peers_up_total` not found in metrics")
 }
 
+// get connected peers from prometheus metrics
 func GetPeers(url string) (totalPeers int, err error) {
 	metrics, err := getMetrics(url)
 	if err != nil {
