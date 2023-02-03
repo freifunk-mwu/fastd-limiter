@@ -49,7 +49,6 @@ func initConfig() {
 
 	viper.SetDefault("additional", 8)
 	viper.SetDefault("redis_db", ":6379")
-	viper.SetDefault("metrics_url_local", "http://127.0.0.1:9281/metrics")
 	viper.SetDefault("key_ttl", 900)
 
 	// If a config file is found, read it in.

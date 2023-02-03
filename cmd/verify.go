@@ -7,19 +7,32 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
+	"time"
 )
 
 // verifyCmd represents the verify command
 var verifyCmd = &cobra.Command{
-	Use:   "verify <public key>",
+	Use:   "verify <public key> [<domain>]",
 	Short: "verify public key",
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.MatchAll(cobra.MinimumNArgs(1), cobra.MaximumNArgs(2)),
 	Run: func(cmd *cobra.Command, args []string) {
 		// get config var
 		redisDb := viper.GetString("redis_db")
+		exporter := viper.GetString("metrics_exporter")
 
 		// get public key to verify from arguments
 		pubkey := args[0]
+
+		// require second argument when running using kea metrics
+		var domain string
+		if exporter == "kea" {
+			if len(args) > 1 {
+				domain = args[1]
+			} else {
+				fmt.Println("error: missing argument `domain`")
+				os.Exit(1)
+			}
+		}
 
 		// connect to redis server
 		conn := common.ConnectRedis(redisDb)
@@ -35,28 +48,58 @@ var verifyCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		// get locally connected peers from redis
-		peers, err := redis.Int(conn.Do("GET", common.PEERS_CONNECTED))
-		if err != nil {
-			fmt.Printf("%v\n", err)
-			os.Exit(1)
-		}
-
-		// get peer limit from redis
-		limit, err := redis.Int(conn.Do("GET", common.PEER_LIMIT))
-		if err != nil {
-			fmt.Printf("%v\n", err)
-			os.Exit(1)
-		}
-
-		// reject (exit) if connected peers are higher or equal limit
-		if peers >= limit {
-			if verbose {
-				fmt.Printf("key found but %s execeded: %d > %d\n", common.PEER_LIMIT, peers, limit)
+		if exporter == "fastd" {
+			// get locally connected peers from redis
+			peers, err := redis.Int(conn.Do("GET", common.PEERS_CONNECTED))
+			if err != nil {
+				fmt.Printf("%v\n", err)
+				os.Exit(1)
 			}
+
+			// get peer limit from redis
+			limit, err := redis.Int(conn.Do("GET", common.PEER_LIMIT))
+			if err != nil {
+				fmt.Printf("%v\n", err)
+				os.Exit(1)
+			}
+
+			// reject (exit) if connected peers are higher or equal limit
+			if peers >= limit {
+				if verbose {
+					fmt.Printf("key found but %s execeded: %d > %d\n", common.PEER_LIMIT, peers, limit)
+				}
+				os.Exit(1)
+			}
+			os.Exit(0)
+		} else if exporter == "kea" {
+			// get local dhcp leases from redis
+			leases_key := fmt.Sprintf(common.DHCP_LEASES, domain)
+			leases, err := redis.Int(conn.Do("GET", leases_key))
+			if err != nil {
+				fmt.Printf("%v\n", err)
+				os.Exit(1)
+			}
+
+			// get dhcp limit from redis
+			limit_key := fmt.Sprintf(common.DHCP_LIMIT, domain)
+			limit, err := redis.Int(conn.Do("GET", limit_key))
+			if err != nil {
+				fmt.Printf("%v\n", err)
+				os.Exit(1)
+			}
+
+			// respond with delay if local leases are higher or equal limit
+			if leases >= limit {
+				if verbose {
+					fmt.Printf("key found but %s execeded: %d > %d, delaying response\n", limit_key, leases, limit)
+				}
+				time.Sleep(5 * time.Second)
+			}
+			os.Exit(0)
+		} else {
+			fmt.Printf("invalid metrics_exporter: %s\n", exporter)
 			os.Exit(1)
 		}
-		os.Exit(0)
 	},
 }
 

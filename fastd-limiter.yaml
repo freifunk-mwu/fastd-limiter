@@ -1,4 +1,4 @@
-# gauge to add to peer limits (optional)
+# gauge to add to fastd peer limits (optional)
 # default: 8
 additional: 8
 
@@ -13,11 +13,14 @@ key_ttl: 900
 # path to fastd public keys (mandatory)
 fastd_keys: '/home/admin/clones/peers-ffmwu'
 
-# url for local fastd-exporter metrics (optional)
-# default: 'http://127.0.0.1:9281/metrics'
+# type of exporter to use. fastd or kea (optional)
+# default: 'fastd'
+metrics_exporter: 'fastd'
+
+# url for local [fastd/kea]-exporter metrics (mandatory)
 metrics_url_local: 'http://127.0.0.1:9281/metrics'
 
-# base url for fastd-exporter metrics (mandatory)
+# base url for [fastd/kea]-exporter metrics (mandatory)
 # %s is replaced with the hostnames defined in gateways
 metrics_url: 'https://%s.freifunk-mwu.de:9281/metrics'
 
@@ -28,3 +31,16 @@ gateways:
   - spinat
   - uffschnitt
   - wasserfloh
+
+# subnet mappings for kea_exporter (mandatory when metrics_exporter=kea)
+subnets:
+  '10.86.0.0/20': 'dom0'
+  '10.86.16.0/20': 'dom1'
+  '10.86.32.0/20': 'dom2'
+  '10.86.48.0/20': 'dom3'
+  '10.86.64.0/20': 'dom4'
+  '10.86.80.0/20': 'dom5'
+  '10.86.96.0/20': 'dom6'
+  '10.86.112.0/20': 'dom7'
+  '10.37.0.0/18': 'mz'
+  '10.56.0.0/18': 'wi'
